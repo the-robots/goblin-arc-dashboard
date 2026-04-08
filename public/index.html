@@ -1,0 +1,29 @@
+const express = require('express');
+const k8s = require('@kubernetes/client-node');
+const cors = require('cors');
+const path = require('path');
+
+const app = express();
+const port = 3000;
+
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'public'))); // ⬅️ serve frontend
+
+const kc = new k8s.KubeConfig();
+kc.loadFromDefault(); // Uses ~/.kube/config
+const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+
+app.get('/api/pods', async (req, res) => {
+  try {
+    const response = await k8sApi.listPodForAllNamespaces();
+    res.json(response.body);
+  } catch (err) {
+    console.error('Error fetching pods', err);
+    res.status(500).json({ error: 'Failed to fetch pods' });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Goblin dashboard backend running at http://0.0.0.0:${port}`);
+});
+

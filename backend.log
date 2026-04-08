@@ -1,0 +1,11 @@
+nohup: ignoring input
+🔭 Starting Kubernetes pod watch...
+Goblin dashboard running at http://0.0.0.0:3000
+[/api/pods] resp type = object keys = [ 'apiVersion', 'items', 'kind', 'metadata' ]
+[/api/pods] typeof resp.body = undefined
+[/api/pods] resp type = object keys = [ 'apiVersion', 'items', 'kind', 'metadata' ]
+[/api/pods] typeof resp.body = undefined
+[/api/pods] resp type = object keys = [ 'apiVersion', 'items', 'kind', 'metadata' ]
+[/api/pods] typeof resp.body = undefined
+[/api/pods] resp type = object keys = [ 'apiVersion', 'items', 'kind', 'metadata' ]
+[/api/pods] typeof resp.body = undefined

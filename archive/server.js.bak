@@ -1,0 +1,82 @@
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const k8s = require('@kubernetes/client-node');
+const cors = require('cors');
+const path = require('path');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: '*' },
+});
+
+const port = 3000;
+
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// --- K3s kubeconfig (known-good system file)
+const kc = new k8s.KubeConfig();
+kc.loadFromFile('/etc/rancher/k3s/k3s.yaml');
+const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+
+// --- Health check
+app.get('/healthz', (_req, res) => res.json({ ok: true }));
+
+// --- REST: pods list (defensive)
+app.get('/api/pods', async (_req, res) => {
+  try {
+    const resp = await k8sApi.listPodForAllNamespaces();
+    const body = resp && resp.body ? resp.body : { items: [] };
+    if (!Array.isArray(body.items)) body.items = [];
+    res.json(body);
+  } catch (err) {
+    console.error('Error fetching pods', err);
+    res.status(500).json({ error: 'Failed to fetch pods' });
+  }
+});
+
+// --- Global watch with auto-reconnect
+function startPodWatch() {
+  const watch = new k8s.Watch(kc);
+  console.log('🔭 Starting Kubernetes pod watch...');
+
+  watch.watch(
+    '/api/v1/pods',
+    {},
+    (type, obj) => {
+      if (!obj || !obj.metadata) return;
+      io.emit('pods:update', { type, pod: obj });
+    },
+    (err) => {
+      console.error('⚠️ Pod watch error:', err);
+      setTimeout(startPodWatch, 5000); // retry after delay
+    }
+  );
+}
+startPodWatch();
+
+// --- WebSocket: send initial list (defensive)
+io.on('connection', (socket) => {
+  console.log('🟢 Client connected:', socket.id);
+
+  k8sApi.listPodForAllNamespaces()
+    .then((resp) => {
+      const items = resp && resp.body && Array.isArray(resp.body.items) ? resp.body.items : [];
+      socket.emit('pods:init', items);
+    })
+    .catch((err) => {
+      console.error('Error sending initial pod list:', err);
+      socket.emit('pods:init', []); // let UI render even if fetch failed
+    });
+
+  socket.on('disconnect', () => {
+    console.log('🔴 Client disconnected:', socket.id);
+  });
+});
+
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Goblin dashboard running at http://0.0.0.0:${port}`);
+});
+

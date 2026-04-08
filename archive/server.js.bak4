@@ -1,0 +1,73 @@
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const k8s = require('@kubernetes/client-node');
+const cors = require('cors');
+const path = require('path');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+  },
+});
+
+const port = 3000;
+
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// K3s kubeconfig
+const kc = new k8s.KubeConfig();
+kc.loadFromFile('/etc/rancher/k3s/k3s.yaml');
+const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+const watch = new k8s.Watch(kc);
+
+// REST endpoint for pods
+app.get('/api/pods', async (req, res) => {
+  try {
+    const response = await k8sApi.listPodForAllNamespaces();
+    res.json(response.body);
+  } catch (err) {
+    console.error('Error fetching pods', err);
+    res.status(500).json({ error: 'Failed to fetch pods' });
+  }
+});
+
+// WebSocket connection
+io.on('connection', (socket) => {
+  console.log('🟢 Client connected:', socket.id);
+
+  // Send initial pod list
+  k8sApi.listPodForAllNamespaces()
+    .then((res) => socket.emit('pods:init', res.body.items))
+    .catch((err) => console.error('Error sending initial pod list:', err));
+
+  // Watch for live changes
+  watch.watch(
+    '/api/v1/pods',
+    {},
+    (type, obj) => {
+      // Send pod event updates to client
+      socket.emit('pods:update', { type, pod: obj });
+    },
+    (err) => {
+      console.error('Watch terminated:', err);
+      // Retry after short delay if disconnected
+      setTimeout(() => {
+        console.log('Reconnecting Kubernetes watch...');
+        io.emit('pods:reconnect');
+      }, 3000);
+    }
+  );
+
+  socket.on('disconnect', () => {
+    console.log('🔴 Client disconnected:', socket.id);
+  });
+});
+
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Goblin dashboard running at http://0.0.0.0:${port}`);
+});
+

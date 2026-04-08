@@ -1,0 +1,136 @@
+import * as k8s from '@kubernetes/client-node';
+import Table from 'cli-table3';
+import chalk from 'chalk';
+import readline from 'readline';
+import fs from 'fs';
+import path from 'path';
+
+export async function watchPods({ namespace }) {
+  const kc = new k8s.KubeConfig();
+
+  // ✅ Use only the verified good kubeconfig
+  const kubeconfigPath = path.join(process.env.HOME || '', '.kube', 'config');
+
+  if (!fs.existsSync(kubeconfigPath)) {
+    console.error(chalk.red(`❌ Kubeconfig not found at ${kubeconfigPath}`));
+    console.error('Make sure to generate it with:');
+    console.error('  sudo k3s kubectl config view --raw > ~/.kube/config');
+    return;
+  }
+
+  try {
+    kc.loadFromFile(kubeconfigPath);
+    console.log(chalk.green(`✅ Loaded kubeconfig from: ${kubeconfigPath}`));
+  } catch (err) {
+    console.error(chalk.red(`❌ Failed to load kubeconfig from: ${kubeconfigPath}`));
+    console.error('Error:', err.message);
+    return;
+  }
+
+  kc.setCurrentContext(kc.getCurrentContext() || 'default');
+  const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+  const watch = new k8s.Watch(kc);
+
+  let pods = [];
+
+  // 🧽 Clears the terminal
+  function clearScreen() {
+    readline.cursorTo(process.stdout, 0, 0);
+    readline.clearScreenDown(process.stdout);
+  }
+
+  // 🎨 Renders the pod table
+  function renderPods() {
+    clearScreen();
+    console.log(chalk.bold('🧩 Goblin Mode - K3s Pod Watcher\n'));
+
+    if (!pods.length) {
+      console.log(chalk.dim('No pods found in this namespace.\n'));
+      return;
+    }
+
+    const table = new Table({
+      head: ['Namespace', 'Pod', 'Status', 'Restarts', 'Node'],
+      style: { head: ['cyan'] },
+    });
+
+    for (const pod of pods) {
+      const status = pod.status?.phase || 'Unknown';
+      const color =
+        status === 'Running'
+          ? chalk.green
+          : status === 'Pending'
+          ? chalk.yellow
+          : chalk.red;
+      const restarts = pod.status?.containerStatuses?.[0]?.restartCount ?? 0;
+
+      table.push([
+        pod.metadata.namespace,
+        pod.metadata.name,
+        color(status),
+        restarts,
+        pod.spec.nodeName || '',
+      ]);
+    }
+
+    console.log(table.toString());
+    console.log(chalk.dim('\nPress Ctrl+C to exit.'));
+  }
+
+  // 🔄 Initial pod list
+  async function fetchInitialPods() {
+    try {
+      const res = await k8sApi.listPodForAllNamespaces();
+
+      if (!res.body || !Array.isArray(res.body.items)) {
+        console.error(chalk.red('❌ Failed to fetch pods. Response body is missing or invalid:'));
+        console.error(res.body);
+        return false;
+      }
+
+      pods = res.body.items.filter((p) =>
+        namespace ? p.metadata.namespace === namespace : true
+      );
+
+      renderPods();
+      return true;
+    } catch (err) {
+      console.error(chalk.red('❌ Error fetching initial pod list:'), err.message);
+      return false;
+    }
+  }
+
+  const ok = await fetchInitialPods();
+  if (!ok) {
+    console.error(chalk.red('\nCould not fetch pods. Make sure your K3s cluster is running and accessible.'));
+    return;
+  }
+
+  // 👀 Live updates
+  watch.watch(
+    '/api/v1/pods',
+    {},
+    (type, obj) => {
+      if (!obj || !obj.metadata) return;
+
+      if (type === 'ADDED') pods.push(obj);
+      if (type === 'DELETED')
+        pods = pods.filter((p) => p.metadata.uid !== obj.metadata.uid);
+      if (type === 'MODIFIED')
+        pods = pods.map((p) =>
+          p.metadata.uid === obj.metadata.uid ? obj : p
+        );
+
+      if (namespace)
+        pods = pods.filter((p) => p.metadata.namespace === namespace);
+
+      renderPods();
+    },
+    (err) => {
+      console.error(chalk.red('⚠️  Watch stream error:'), err.message);
+      console.log(chalk.yellow('Reconnecting in 5 seconds...'));
+      setTimeout(() => watchPods({ namespace }), 5000);
+    }
+  );
+}
+

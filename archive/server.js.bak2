@@ -1,0 +1,40 @@
+const express = require("express");
+const cors = require("cors");
+const k8s = require("@kubernetes/client-node");
+
+const app = express();
+const PORT = 3000;
+
+app.use(cors());
+app.use(express.json());
+
+const kc = new k8s.KubeConfig();
+kc.loadFromDefault();
+
+const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+
+app.get("/api/pods", async (req, res) => {
+  try {
+    const response = await k8sApi.listPodForAllNamespaces();
+    const items = response.body.items.map(p => ({
+      metadata: {
+        name: p.metadata.name,
+        namespace: p.metadata.namespace
+      },
+      status: p.status.phase
+    }));
+    res.json({ items });
+  } catch (err) {
+    console.error("Error fetching pods", err);
+    res.status(500).json({ error: "Failed to fetch pods" });
+  }
+});
+
+app.use((req, res) => {
+  console.warn(`⚠️ Unknown route: ${req.method} ${req.url}`);
+  res.status(404).json({ error: "Route not found" });
+});
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🟢 Goblin dashboard backend running at http://0.0.0.0:${PORT}`);
+});

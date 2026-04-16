@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest && cd frontend && npx jest",
+    "test:backend": "jest",
+    "test:frontend": "cd frontend && npx jest"
   },
   "keywords": [],
   "author": "",

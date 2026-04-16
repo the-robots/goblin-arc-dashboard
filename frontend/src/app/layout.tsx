@@ -27,14 +27,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <title>🧩 Goblin mode - K3s Pod Dashboard</title>
-        <meta
-          name="description"
-          content="Real-time K3s container and pod monitoring dashboard"
-        />
-        <link rel="icon" href="/favicon.ico" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+
+# logs
+*.log
+
+# backup files
+*.bak
+*.bak[0-9]*
+*.bak-*
+
+# OS files
+.DS_Store
+
+# environment
+.env*

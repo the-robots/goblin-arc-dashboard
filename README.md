@@ -60,54 +60,40 @@ cd goblin-arc-dashboard
 
 ### 2. Install dependencies
 
-Backend (from repo root):
+Install both backend and frontend dependencies at once:
 
 ```bash
-npm install
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm install
-cd ..
+npm run install:all
 ```
 
 ---
 
-### 3. Start the backend
+### 3. Start the app
 
-From the repo root:
-
-```bash
-node server.js
-```
-
-Expected output:
-
-```
-Goblin dashboard running at http://0.0.0.0:3000
-```
-
-Backend server is on verification page
-![](https://github.com/the-robots/goblin-arc-dashboard/blob/main/goblin-dashboard-backend.png)
-
-
----
-
-### 4. Start the frontend
-
-⚠️ Must be run from the `frontend` directory:
+Run both the backend and frontend with a single command from the repo root:
 
 ```bash
+npm run dev
+```
+
+This starts:
+* **Backend** on port `3000`
+* **Frontend** on port `3001`
+
+You can also run them individually if needed:
+
+```bash
+# Backend only
+npm start
+
+# Frontend only (from the frontend directory)
 cd frontend
 npm run dev -- --hostname 0.0.0.0 --port 3001
 ```
 
 ---
 
-### 5. Open the dashboard
+### 4. Open the dashboard
 
 ```
 http://<your-server-ip>:3001
@@ -165,10 +151,10 @@ kc.loadFromFile('/path/to/your/kubeconfig');
 
 ## 🧌 Notes
 
-* Frontend and backend run separately
+* `npm run dev` starts both frontend and backend together
 * Backend serves API + sockets only
 * Frontend is the actual dashboard UI
-* Port confusion will ruin your day — remember:
+* Port assignments:
 
   * `3000 = backend`
   * `3001 = UI`

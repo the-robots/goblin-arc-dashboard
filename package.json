@@ -1,9 +1,12 @@
 {
   "name": "goblin-dashboard",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A lightweight, real-time Kubernetes (k3s) dashboard for watching pods",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "concurrently -n backend,frontend -c blue,green \"node server.js\" \"cd frontend && npm run dev -- --hostname 0.0.0.0 --port 3001\"",
+    "install:all": "npm install && cd frontend && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,5 +17,8 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }

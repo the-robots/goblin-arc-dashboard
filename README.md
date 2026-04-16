@@ -1,5 +1,3 @@
-# goblin-arc-dashboard
-
 # 🧌 Goblin ARC Dashboard
 
 A lightweight, real-time Kubernetes (k3s) dashboard for watching pods without the bloat.

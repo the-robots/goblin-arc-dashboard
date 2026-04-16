@@ -41,6 +41,10 @@ Frontend (Next.js)  --->  Backend (Express)  --->  Kubernetes API
 * **Port 3001** → Frontend (UI)
 * **Port 3000** → Backend (API + sockets)
 
+Frontend UI
+![](https://github.com/the-robots/goblin-arc-dashboard/blob/main/goblin-dashboard-sshot.png)
+
+
 ---
 
 ## 🚀 Getting Started
@@ -85,6 +89,10 @@ Expected output:
 ```
 Goblin dashboard running at http://0.0.0.0:3000
 ```
+
+Backend server is on verification page
+![](https://github.com/the-robots/goblin-arc-dashboard/blob/main/goblin-dashboard-backend.png)
+
 
 ---
 

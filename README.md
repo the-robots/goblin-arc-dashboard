@@ -24,8 +24,12 @@ The app has two parts:
 * **Backend (port 3000)**
   Handles Kubernetes communication and streams updates
 
+  ![Goblin Dashboard Backend](goblin-dashboard-backend.png)
+
 * **Frontend (port 3001)**
   Displays the dashboard UI
+
+  ![Goblin Dashboard Frontend](goblin-dashboard-frontend.png)
 
 👉 You only need to open the frontend in your browser.
 

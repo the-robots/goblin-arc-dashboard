@@ -48,44 +48,27 @@ cd goblin-arc-dashboard
 
 ### 2. Install dependencies
 
-Backend (from repo root):
+From the repo root, install both backend and frontend dependencies:
 
 ```bash
-npm install
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm install
-cd ..
+npm run install:all
 ```
 
 ---
 
-### 3. Start the backend
+### 3. Start the app
 
-From the repo root:
+From the repo root, start both the backend and frontend with a single command:
 
 ```bash
-node server.js
+npm run dev
 ```
+
+This launches the backend (port 3000) and frontend (port 3001) simultaneously using `concurrently`.
 
 ---
 
-### 4. Start the frontend
-
-⚠️ Must be run from the `frontend` directory:
-
-```bash
-cd frontend
-npm run dev -- --hostname 0.0.0.0 --port 3001
-```
-
----
-
-### 5. Open the dashboard
+### 4. Open the dashboard
 
 ```text
 http://<your-server-ip>:3001

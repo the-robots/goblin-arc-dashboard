@@ -99,6 +99,28 @@ http://192.168.1.229:3001
 
 ---
 
+## 🔄 Real-Time UI Updates
+
+The dashboard updates **dynamically in real time** — no page reloads required.
+
+### How it works
+
+1. **Kubernetes Watch (backend)**
+   The backend uses the Kubernetes Watch API to subscribe to pod events across all namespaces. Whenever a pod is added, modified, or deleted, Kubernetes pushes the change to the backend immediately.
+
+2. **WebSocket Push (backend → frontend)**
+   The backend runs a [Socket.IO](https://socket.io/) server. When it receives a pod event from the Kubernetes watch, it broadcasts a `pods:update` message to every connected browser over a persistent WebSocket connection.
+
+3. **Live React State (frontend)**
+   The frontend connects to the backend WebSocket on page load. Incoming `pods:update` events are applied directly to React state, which causes the UI to re-render instantly:
+
+   * **Kube Blocks** — Pod cards appear, disappear, or update their status in place as pods are added, deleted, or modified.
+   * **Event Log** — Each change is prepended to the log with a color-coded icon (🟢 added, 🟡 modified, 🔴 deleted), giving you a live feed of cluster activity.
+
+Because updates flow through a persistent WebSocket rather than polling or page refreshes, the dashboard reflects cluster changes within moments of them happening.
+
+---
+
 ## ⚠️ Important Notes
 
 * **Port 3001 = dashboard UI**

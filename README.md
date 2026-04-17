@@ -1,6 +1,6 @@
 # 🧌 Goblin ARC Dashboard
 
-A lightweight, real-time Kubernetes (k3s) dashboard for watching pods without the bloat.
+A lightweight, real-time dashboard for watching Kubernetes pods without the overhead of large monitoring tools.
 
 ---
 
@@ -8,40 +8,26 @@ A lightweight, real-time Kubernetes (k3s) dashboard for watching pods without th
 
 Goblin ARC Dashboard is a simple full-stack app that:
 
-* 📡 Fetches pod data from a Kubernetes cluster
-* 🔄 Streams real-time updates via WebSockets
-* 🧱 Displays pods in a clean UI
-* ⚡ Gives fast visibility into cluster activity
+* Connects to a Kubernetes cluster
+* Tracks pods across namespaces
+* Streams updates in real time
+* Displays everything in a clean UI
 
-Built for speed, clarity, and not dealing with massive dashboards when you don’t need them.
-
----
-
-## ⚙️ Tech Stack
-
-* **Backend:** Node.js, Express, Socket.IO
-* **Frontend:** Next.js
-* **Kubernetes Client:** `@kubernetes/client-node`
-* **Cluster:** k3s (tested locally)
+It’s built for quick visibility and fast feedback — not enterprise bloat.
 
 ---
 
-## 🗺️ Architecture
+## ⚙️ How It Works
 
-```
-Frontend (Next.js)  --->  Backend (Express)  --->  Kubernetes API
-        |                        |
-        |                        +-- /api/pods (REST)
-        |
-        +------ WebSocket <------+-- live updates
-```
+The app has two parts:
 
-* **Port 3001** → Frontend (UI)
-* **Port 3000** → Backend (API + sockets)
+* **Backend (port 3000)**
+  Handles Kubernetes communication and streams updates
 
-Frontend UI
-![](https://github.com/the-robots/goblin-arc-dashboard/blob/main/goblin-dashboard-sshot.png)
+* **Frontend (port 3001)**
+  Displays the dashboard UI
 
+👉 You only need to open the frontend in your browser.
 
 ---
 
@@ -58,123 +44,96 @@ cd goblin-arc-dashboard
 
 ### 2. Install dependencies
 
-Install both backend and frontend dependencies at once:
+Backend (from repo root):
 
 ```bash
-npm run install:all
+npm install
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm install
+cd ..
 ```
 
 ---
 
-### 3. Start the app
+### 3. Start the backend
 
-Run both the backend and frontend with a single command from the repo root:
+From the repo root:
 
 ```bash
-npm run dev
+node server.js
 ```
 
-This starts:
-* **Backend** on port `3000`
-* **Frontend** on port `3001`
+---
 
-You can also run them individually if needed:
+### 4. Start the frontend
+
+⚠️ Must be run from the `frontend` directory:
 
 ```bash
-# Backend only
-npm start
-
-# Frontend only (from the frontend directory)
 cd frontend
 npm run dev -- --hostname 0.0.0.0 --port 3001
 ```
 
 ---
 
-### 4. Open the dashboard
+### 5. Open the dashboard
 
-```
+```text
 http://<your-server-ip>:3001
 ```
 
 Example:
 
-```
+```text
 http://192.168.1.229:3001
 ```
 
 ---
 
-## 🔍 API Endpoints
+## ⚠️ Important Notes
 
-### Health Check
+* **Port 3001 = dashboard UI**
+* **Port 3000 = backend only**
 
-```
-GET /healthz
-```
-
-### Pod List
-
-```
-GET /api/pods
-```
+If you open port 3000 in a browser, you may see a placeholder page or raw output — this is expected.
 
 ---
 
-## 🔄 Real-Time Events
-
-WebSocket events used by the dashboard:
-
-* `pods:init` → initial pod list
-* `pods:update` → live updates
-
----
-
-## ⚠️ Requirements
+## 🧌 Requirements
 
 * Access to a Kubernetes cluster
-* Valid kubeconfig at:
+* A valid kubeconfig file
+
+By default, this project is configured for k3s using:
 
 ```
 /etc/rancher/k3s/k3s.yaml
 ```
 
-If needed, update in `server.js`:
+If you are using standard Kubernetes, update the kubeconfig path in `server.js`:
 
 ```js
 kc.loadFromFile('/path/to/your/kubeconfig');
 ```
 
----
+Alternatively, you can modify it to use your default kubeconfig:
 
-## 🧌 Notes
-
-* `npm run dev` starts both frontend and backend together
-* Backend serves API + sockets only
-* Frontend is the actual dashboard UI
-* Port assignments:
-
-  * `3000 = backend`
-  * `3001 = UI`
-
----
-
-## 🛠️ Future Ideas
-
-* Namespace filtering
-* Pod logs viewer
-* Metrics integration
-* Ingress / custom domain
-* Authentication
+```js
+kc.loadFromDefault();
+```
 
 ---
 
 ## 🧌 Final Words
 
-Fast, scrappy, and built to get visibility without friction.
+This is a fast, scrappy dashboard for seeing what your cluster is doing right now.
 
 If it works — don’t touch it.
 If it breaks — welcome back to goblin mode.
 
 ---
-

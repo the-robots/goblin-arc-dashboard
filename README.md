@@ -13,7 +13,42 @@ Goblin ARC Dashboard is a simple full-stack app that:
 * Streams updates in real time
 * Displays everything in a clean UI
 
-It’s built for quick visibility and fast feedback — not enterprise bloat.
+It's built for quick visibility and fast feedback — not enterprise bloat.
+
+---
+
+## 📋 Requirements
+
+Before running the dashboard, make sure you have the following installed and available:
+
+| Requirement | Version | Description | Link |
+|---|---|---|---|
+| **Kubernetes (K8s)** or **K3s** | K8s 1.24+ / K3s 1.24+ | A running cluster to monitor. K3s is a lightweight alternative ideal for edge, IoT, and dev environments. | [Kubernetes](https://kubernetes.io/) · [K3s](https://k3s.io/) |
+| **Node.js** | 18.18 or later | JavaScript runtime used by both the backend and the frontend. | [nodejs.org](https://nodejs.org/) |
+| **npm** | 9 or later (ships with Node.js) | Package manager for installing dependencies. | [npmjs.com](https://www.npmjs.com/) |
+| **kubeconfig file** | — | Credentials file that lets the dashboard authenticate to your cluster. | [Kubernetes docs – kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) |
+| **kubectl** *(optional)* | — | Helpful for verifying cluster access before starting the dashboard. | [Install kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) |
+| **Git** *(optional)* | — | For cloning the repository. | [git-scm.com](https://git-scm.com/) |
+
+### Kubeconfig
+
+By default the project is configured for **K3s** and loads the kubeconfig from:
+
+```
+/etc/rancher/k3s/k3s.yaml
+```
+
+If you use standard Kubernetes, update the kubeconfig path in `server.js`:
+
+```js
+kc.loadFromFile('/path/to/your/kubeconfig');
+```
+
+Or load the default kubeconfig (`~/.kube/config`):
+
+```js
+kc.loadFromDefault();
+```
 
 ---
 
@@ -44,48 +79,46 @@ git clone https://github.com/the-robots/goblin-arc-dashboard.git
 cd goblin-arc-dashboard
 ```
 
----
-
 ### 2. Install dependencies
 
-Backend (from repo root):
+Install both backend and frontend dependencies in one step:
 
 ```bash
-npm install
+npm run install:all
 ```
 
-Frontend:
+Or install them separately:
 
 ```bash
+# Backend (from repo root)
+npm install
+
+# Frontend
 cd frontend
 npm install
 cd ..
 ```
 
----
+### 3. Start both servers
 
-### 3. Start the backend
-
-From the repo root:
+Run the backend and frontend together:
 
 ```bash
-node server.js
+npm run dev
 ```
 
----
-
-### 4. Start the frontend
-
-⚠️ Must be run from the `frontend` directory:
+Or start them separately:
 
 ```bash
+# Backend (from repo root)
+node server.js
+
+# Frontend (from the frontend directory)
 cd frontend
 npm run dev -- --hostname 0.0.0.0 --port 3001
 ```
 
----
-
-### 5. Open the dashboard
+### 4. Open the dashboard
 
 ```text
 http://<your-server-ip>:3001
@@ -130,36 +163,11 @@ If you open port 3000 in a browser, you may see a placeholder page or raw output
 
 ---
 
-## 🧌 Requirements
-
-* Access to a Kubernetes cluster
-* A valid kubeconfig file
-
-By default, this project is configured for k3s using:
-
-```
-/etc/rancher/k3s/k3s.yaml
-```
-
-If you are using standard Kubernetes, update the kubeconfig path in `server.js`:
-
-```js
-kc.loadFromFile('/path/to/your/kubeconfig');
-```
-
-Alternatively, you can modify it to use your default kubeconfig:
-
-```js
-kc.loadFromDefault();
-```
-
----
-
 ## 🧌 Final Words
 
 This is a fast, scrappy dashboard for seeing what your cluster is doing right now.
 
-If it works — don’t touch it.
+If it works — don't touch it.
 If it breaks — welcome back to goblin mode.
 
 ---

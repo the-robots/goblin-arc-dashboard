@@ -1,19 +1,46 @@
-# 🧌 Goblin ARC Dashboard
+# 🧌 Goblin GitHub ARC Dashboard
 
-A lightweight, real-time dashboard for watching Kubernetes pods without the overhead of large monitoring tools.
+A lightweight, real-time health dashboard for GitHub Actions Runner Controller (ARC) without the overhead of large monitoring tools.
 
 ---
 
 ## 🧠 What This Is
 
-Goblin ARC Dashboard is a simple full-stack app that:
+Goblin GitHub ARC Dashboard is a simple full-stack app that:
 
-* Connects to a Kubernetes cluster
+* Connects to the Kubernetes cluster hosting ARC
+* Checks ARC controller and runner health
 * Tracks pods across namespaces
 * Streams updates in real time
 * Displays everything in a clean UI
 
 It's built for quick visibility and fast feedback — not enterprise bloat.
+
+The dashboard uses the standard Kubernetes API, so ARC can run on any
+conformant Kubernetes distribution (not only K3s).
+It monitors one cluster/context per backend instance; simultaneous multi-cluster
+monitoring is not currently supported. The Hyper-V K3s setup below is a local
+installation example, not a requirement.
+
+### ARC health
+
+The ARC panel checks controller deployment availability and observed rollout,
+legacy runner readiness and desired/available capacity, ARC pod readiness,
+autoscaler bounds, and matching warning events from the last hour. It refreshes
+every 30 seconds; the backend shares snapshots for 15 seconds. It discovers legacy
+ARC (`actions.summerwind.dev`) and scale-set CRDs (`actions.github.com`).
+Scale-set resource counts are informational and remain unverified rather than
+being labeled healthy. Missing permissions/read failures produce **unknown**
+health, not a green result. Warning events request inspection, not proof of an
+ongoing outage. Zero runners can be intentional.
+
+These are **Kubernetes-side checks**, not proof of GitHub registration,
+online/busy status, authentication, autoscaling reconciliation, or successful job
+execution. The kubeconfig needs read-only list access to deployments, pods, events,
+CRDs and the installed ARC custom resources across namespaces. Controller discovery
+uses known deployment names/labels; nonstandard installations may not be detected.
+Only selected status/configuration fields are returned by `/api/arc`, never ARC
+registration tokens or secrets.
 
 ---
 
@@ -32,22 +59,29 @@ Before running the dashboard, make sure you have the following installed and ava
 
 ### Kubeconfig
 
-By default the project is configured for **K3s** and loads the kubeconfig from:
+The backend uses the standard Kubernetes configuration: `KUBECONFIG` when set,
+otherwise `~/.kube/config`. Set `KUBE_CONTEXT` to override the file's current context.
+It exits with an error when no cluster is configured.
 
+For a local Windows installation with a Hyper-V K3s VM, place a dedicated
+kubeconfig at `$HOME\.kube\goblin-k3s.yaml`. Replace its loopback API server
+address with the VM's reachable hostname or IP, which must also match the API
+server certificate. Keep TLS verification enabled and keep credentials outside
+this repository. The dashboard only reads the cluster.
+
+```powershell
+npm.cmd run install:all
+npm.cmd run start:local
 ```
-/etc/rancher/k3s/k3s.yaml
-```
 
-If you use standard Kubernetes, update the kubeconfig path in `server.js`:
+`start:local` uses that dedicated file unless `KUBECONFIG` is already set. It does
+not change your kubectl current context. Open http://localhost:3001.
 
-```js
-kc.loadFromFile('/path/to/your/kubeconfig');
-```
+To use another file:
 
-Or load the default kubeconfig (`~/.kube/config`):
-
-```js
-kc.loadFromDefault();
+```powershell
+$env:KUBECONFIG = 'C:\path\to\kubeconfig'
+npm.cmd run start:local
 ```
 
 ---
@@ -115,19 +149,19 @@ node server.js
 
 # Frontend (from the frontend directory)
 cd frontend
-npm run dev -- --hostname 0.0.0.0 --port 3001
+npm run dev -- --hostname 127.0.0.1 --port 3001
 ```
 
 ### 4. Open the dashboard
 
 ```text
-http://<your-server-ip>:3001
+http://localhost:3001
 ```
 
 Example:
 
 ```text
-http://192.168.1.229:3001
+http://localhost:3001
 ```
 
 ---
@@ -151,6 +185,35 @@ The dashboard updates **dynamically in real time** — no page reloads required.
    * **Event Log** — Each change is prepended to the log with a color-coded icon (🟢 added, 🟡 modified, 🔴 deleted), giving you a live feed of cluster activity.
 
 Because updates flow through a persistent WebSocket rather than polling or page refreshes, the dashboard reflects cluster changes within moments of them happening.
+
+The UI includes namespace/status filters, pod search, readiness and restart counts,
+container waiting reasons, and a bounded 50-event log. Click a pod goblin to
+toggle its read-only container health report. Each has a stable, pod-specific
+appearance; healthy goblins are small, while those needing attention are larger.
+They grin green/teal for ready workloads, turn amber for pending/unready containers
+or restarts in the last 10 minutes, and worry pink for failures (including init
+container failures). Completed/terminating pods sleep; missing health stays gray.
+Lifetime restart totals alone do not trigger an alarm. The chief goblin reflects
+overall health and turns gray when the watch is offline. Hover/focus and click
+animations respect reduced-motion preferences. Connection and watch errors
+are shown explicitly; disconnected data may be stale. Pods are identified by both
+namespace and name, so identical names in different namespaces remain distinct.
+
+The collapsible Goblin key shows each mood's live face and explains colors, expressions and decorative variations.
+Moods are animated: grinning goblins blink and bob, waiting goblins glance around, worried goblins fidget and
+sweat, sleepy goblins snooze, and unknown goblins scan. Animations are disabled when the OS requests reduced motion.
+Inside a goblin report, expand an individual container (including init containers)
+to see its image, readiness/restarts, current state and messages, startup time,
+current/previous exit details, declared ports, and resource requests/limits.
+Configured containers without a status are also listed. Resource values are
+configuration, not live CPU/memory usage; timestamps are shown as Kubernetes
+reports them. Environment variables and credentials are not displayed.
+
+By default both servers bind to loopback, and the backend allows the UI origin
+`http://localhost:3001`. For deliberate LAN use, set `HOST` and `FRONTEND_ORIGIN`
+on the backend, and `NEXT_PUBLIC_BACKEND_URL` on the frontend, then launch the
+frontend with the desired `--hostname`. `PORT` overrides the backend port.
+There is no dashboard authentication, so do not expose it to untrusted networks.
 
 ---
 

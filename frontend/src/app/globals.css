@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617;
+  --foreground: #e2e8f0;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -12,15 +13,107 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  background: radial-gradient(ellipse at top left, #064e3b33, transparent 60%), var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.goblin-button {
+  cursor: pointer;
+}
+
+.goblin-button svg {
+  transition: transform 180ms ease;
+  transform-origin: bottom center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .goblin-button:hover svg,
+  .goblin-button:focus-visible svg {
+    transform: rotate(-8deg) scale(1.12);
+  }
+
+  .goblin-selected svg {
+    animation: goblin-nod 350ms ease-out;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes goblin-nod {
+  50% { transform: translateY(-4px) rotate(8deg); }
+}
+
+/* Mood animations: transform-box keeps SVG parts rotating/scaling around themselves. */
+.goblin .goblin-body,
+.goblin .goblin-eyes,
+.goblin .goblin-pupils,
+.goblin .goblin-sweat,
+.goblin .goblin-zzz {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.goblin .goblin-body {
+  transform-origin: bottom center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .goblin-grinning .goblin-eyes { animation: goblin-blink 4s infinite var(--goblin-delay, 0s); }
+  .goblin-grinning .goblin-body { animation: goblin-bob 3s ease-in-out infinite var(--goblin-delay, 0s); }
+
+  .goblin-waiting .goblin-pupils { animation: goblin-glance 3.2s ease-in-out infinite var(--goblin-delay, 0s); }
+  .goblin-waiting .goblin-eyes { animation: goblin-blink 5s infinite var(--goblin-delay, 0s); }
+
+  .goblin-worried .goblin-body { animation: goblin-fidget 1.6s ease-in-out infinite var(--goblin-delay, 0s); }
+  .goblin-worried .goblin-sweat { animation: goblin-sweat 1.8s ease-in infinite var(--goblin-delay, 0s); }
+
+  .goblin-sleepy .goblin-body { animation: goblin-breathe 4s ease-in-out infinite var(--goblin-delay, 0s); }
+  .goblin-sleepy .goblin-zzz { animation: goblin-zzz 3s ease-out infinite var(--goblin-delay, 0s); }
+
+  .goblin-unknown .goblin-pupils { animation: goblin-scan 6s ease-in-out infinite var(--goblin-delay, 0s); }
+}
+
+@keyframes goblin-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+@keyframes goblin-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes goblin-glance {
+  0%, 30%, 100% { transform: translateX(0); }
+  40%, 60% { transform: translateX(-4px); }
+  70%, 85% { transform: translateX(2px); }
+}
+
+@keyframes goblin-fidget {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  68% { transform: rotate(-3deg); }
+  76% { transform: rotate(3deg); }
+  84% { transform: rotate(-2deg); }
+}
+
+@keyframes goblin-sweat {
+  0% { transform: translateY(-2px); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(14px); opacity: 0; }
+}
+
+@keyframes goblin-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03, 0.98); }
+}
+
+@keyframes goblin-zzz {
+  0% { transform: translate(-4px, 6px); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translate(4px, -8px); opacity: 0; }
+}
+
+@keyframes goblin-scan {
+  0%, 100% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
 }

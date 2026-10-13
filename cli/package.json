@@ -1,7 +1,7 @@
 {
   "name": "goblin-cli",
   "version": "1.0.0",
-  "description": "🧩 Goblin Mode — K3s Pod CLI Dashboard",
+  "description": "🧩 Goblin Mode — GitHub ARC CLI Dashboard",
   "type": "module",
   "bin": {
     "goblin": "./index.js"
@@ -19,4 +19,3 @@
     "ora": "^9.0.0"
   }
 }
-

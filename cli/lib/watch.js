@@ -68,7 +68,7 @@ export async function watchPods({ namespace }) {
   function renderPods() {
     clearScreen();
 
-    console.log(chalk.bold.green('🧩 Goblin Mode - K3s Pod Watcher\n'));
+    console.log(chalk.bold.green('🧩 Goblin Mode - GitHub ARC Pod Watcher\n'));
     console.log(
       chalk.cyanBright(`🌐 Cluster:`),
       chalk.white(cluster.name || 'default'),
@@ -145,4 +145,3 @@ export async function watchPods({ namespace }) {
     }
   );
 }
-

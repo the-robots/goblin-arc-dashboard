@@ -1,11 +1,12 @@
 {
   "name": "goblin-dashboard",
   "version": "1.0.0",
-  "description": "A lightweight, real-time Kubernetes (k3s) dashboard for watching pods",
+  "description": "A lightweight, real-time GitHub ARC (Actions Runner Controller) dashboard",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "concurrently -n backend,frontend -c blue,green \"node server.js\" \"cd frontend && npm run dev -- --hostname 0.0.0.0 --port 3001\"",
+    "start:local": "node start-local.js",
+    "dev": "concurrently --kill-others -n backend,frontend -c blue,green \"node server.js\" \"npm --prefix frontend run dev -- --hostname 127.0.0.1 --port 3001\"",
     "install:all": "npm install && cd frontend && npm install",
     "test": "jest && cd frontend && npx jest",
     "test:backend": "jest",

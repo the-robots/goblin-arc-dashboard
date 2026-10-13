@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "🧩 Goblin mode - K3s Pod Dashboard",
-  description: "Real-time K3s container and pod monitoring dashboard",
+  title: "🧩 Goblin mode - GitHub ARC Dashboard",
+  description: "GitHub Actions Runner Controller (ARC) health and live runner workload monitoring",
   icons: {
     icon: "/favicon.ico",
   },
@@ -35,4 +35,3 @@ export default function RootLayout({
     </html>
   );
 }
-

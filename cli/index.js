@@ -6,7 +6,7 @@ const program = new Command();
 
 program
   .name('goblin')
-  .description('🧩 Goblin Mode - K3s Pod CLI Dashboard')
+  .description('🧩 Goblin Mode - GitHub ARC CLI Dashboard')
   .version('1.0.0');
 
 program
@@ -16,4 +16,3 @@ program
   .action((opts) => watchPods(opts));
 
 program.parse(process.argv);
-
